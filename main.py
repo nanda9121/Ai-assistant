@@ -5,6 +5,7 @@ import datetime
 import webbrowser
 import os
 import pywhatkit
+import psutil
 
 
 MODEL_NAME = "llama3"
@@ -139,7 +140,19 @@ while True:
         save_memory("")
         speak("Memory cleared successfully.")
         
-
+    elif "battery" in command:
+        battery = psutil.sensors_battery()
+        percent = battery.percent
+        speak(f"Battery is at {percent} percent")
+    
+    elif "shutdown computer" in command:
+        speak("Shutting down computer")
+        os.system("shutdown /s /t 5")
+        
+    elif "restart computer" in command:
+        speak("Restarting computer")
+        os.system("shutdown /r /t 5")
+    
     else:
         reply = ask_ai(command)
         speak(reply)
