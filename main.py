@@ -32,17 +32,33 @@ conversation_memory = load_memory()
 
 def listen():
     r = sr.Recognizer()
+
     with sr.Microphone() as source:
         print("Listening...")
         r.adjust_for_ambient_noise(source)
-        audio = r.listen(source)
+
+        try:
+            audio = r.listen(source, timeout=5)
+        except:
+            return ""
 
     try:
         command = r.recognize_google(audio)
-        print("You:", command)
+        print("You said:", command)
         return command.lower()
+
+    except sr.UnknownValueError:
+        print("Could not understand audio")
+        return ""
+
+    except sr.RequestError:
+        print("Speech service error")
+        return ""
+
     except:
         return ""
+
+            
 
 def ask_ai(prompt):
     response = requests.post(
@@ -60,6 +76,9 @@ speak("Initializing JARVIS. Systems online. Hello Nanda.")
 while True:
     command = listen()
 
+    if not command:
+        continue
+
     if "exit" in command:
         speak("Shutting down. Goodbye Nanda.")
         break
@@ -67,18 +86,43 @@ while True:
     elif "time" in command:
         time = datetime.datetime.now().strftime("%H:%M")
         speak(f"The current time is {time}")
+        
+    elif "date" in command:
+        today = datetime.date.today()
+        speak(f"Today's date is {today}")
 
     elif "open chrome" in command:
         speak("Opening Chrome")
         os.system("start chrome")
     
+    elif "open google" in command:
+        speak("Opening Google")
+        webbrowser.open("https://www.google.com")
+
     elif "open youtube" in command:
-        webbrowser.open("https://youtube.com")
         speak("Opening YouTube")
+        webbrowser.open("https://www.youtube.com")
+
+    elif "open instagram" in command:
+        speak("Opening Instagram")
+        webbrowser.open("https://www.instagram.com")
 
     elif "open vs code" in command:
         speak("Opening Visual Studio Code")
         os.system("code")
+        
+    elif "open notepad" in command:
+        speak("Opening Notepad")
+        os.system("notepad")
+        
+    elif "open calculator" in command:
+        speak("Opening Calculator")
+        os.system("calc")
+    
+    elif "open" in command:
+        app = command.replace("open", "").strip()
+        speak(f"Opening {app}")
+        os.system(app)
 
     elif "play" in command:
         song = command.replace("play", "")
@@ -86,14 +130,15 @@ while True:
         pywhatkit.playonyt(song)
     
     elif "search for" in command:
-        search = command.replace("search for", "").strip()
+        search = command.replace("search for", "")
+        speak("Searching Google")
         webbrowser.open(f"https://www.google.com/search?q={search}")
-        speak(f"Searching for {search}")
         
     elif "clear memory" in command:
         conversation_memory = ""
         save_memory("")
         speak("Memory cleared successfully.")
+        
 
     else:
         reply = ask_ai(command)
